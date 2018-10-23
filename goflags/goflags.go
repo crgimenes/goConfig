@@ -42,6 +42,7 @@ func Setup(tag string, tagDefault string) {
 	SetTag(tag)
 	SetTagDefault(tagDefault)
 
+	structtag.ParseMap[reflect.Int64] = reflectInt
 	structtag.ParseMap[reflect.Int] = reflectInt
 	structtag.ParseMap[reflect.Float64] = reflectFloat
 	structtag.ParseMap[reflect.String] = reflectString
