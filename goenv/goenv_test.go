@@ -3,16 +3,20 @@ package goenv
 import (
 	"os"
 	"testing"
+	"time"
 )
 
 type testStruct struct {
 	A int    `cfg:"A" cfgDefault:"100"`
 	B string `cfg:"B" cfgDefault:"200"`
 	C string
-	D bool `cfg:"D" cfgDefault:"true"`
+	D bool          `cfg:"D" cfgDefault:"true"`
+	E time.Duration `cfg:"E"`
 	F float64
-	G float64 `cfg:"G" cfgDefault:"3.05"`
-	N string  `cfg:"-"`
+	G float64       `cfg:"G" cfgDefault:"3.05"`
+	H int64         `cfg:"H"`
+	I time.Duration `cfg:"I" cfgDefault:"5000"`
+	N string        `cfg:"-"`
 	M int
 	p string
 	S testSub `cfg:"S"`
@@ -37,6 +41,8 @@ func TestParse(t *testing.T) {
 	os.Setenv("B", "TEST")
 	os.Setenv("D", "true")
 	os.Setenv("F", "23.6")
+	os.Setenv("E", "500")
+	os.Setenv("H", "1000")
 
 	s := &testStruct{A: 1, F: 1.0, S: testSub{A: 1, B: "2"}}
 	err := Parse(s)
@@ -54,6 +60,18 @@ func TestParse(t *testing.T) {
 
 	if !s.D {
 		t.Fatal("s.D == true, s.D:", s.D)
+	}
+
+	if s.E != time.Nanosecond*500 {
+		t.Fatal("s.E != 500ns, s.E:", s.E)
+	}
+
+	if s.H != 1000 {
+		t.Fatal("s.H != 1000, s.H:", s.H)
+	}
+
+	if s.I != time.Nanosecond*5000 {
+		t.Fatal("s.I != 5000ns, s.I:", s.I)
 	}
 
 	if s.F != 23.6 {
