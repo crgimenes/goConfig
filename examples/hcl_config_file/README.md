@@ -25,17 +25,24 @@ Environment variables:
   $EXAMPLE_MONGODB_PORT int
 	 (default "999")
 
-Config file "./config.json":
-{
-    "Domain": "www.example.com",
-    "User": {
-        "Name": "",
-        "Password": ""
-    },
-    "MongoDB": {
-        "Host": "localhost",
-        "Port": 33
-    }
+Config file "config.hcl":
+
+ '=' BEFORE '{' IS OPTIONAL
+
+"Domain" = "example.com"
+
+"debug" = true
+
+"mongodb" = {
+  "Host" = "myhost"
+
+  "Port" = 9090
+}
+
+"user" = {
+  "Name" = ""
+
+  "Password" = ""
 }
 exit status 2
 ```
