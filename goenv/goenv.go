@@ -91,12 +91,12 @@ func getNewValue(field *reflect.StructField, value *reflect.Value, tag string, d
 	PrintDefaultsOutput += output
 
 	// get value from environment variable
-	ret = os.Getenv(tag)
-	if ret != "" {
+	ret, ok := os.LookupEnv(tag)
+	if ok {
 		return
 	}
 
-	ret, ok := parseValue(datatype, value)
+	ret, ok = parseValue(datatype, value)
 	if ok {
 		return
 	}
