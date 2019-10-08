@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"time"
 
 	"path/filepath"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/crgimenes/goconfig/goflags"
 	"github.com/crgimenes/goconfig/structtag"
 	"github.com/crgimenes/goconfig/validate"
+	"github.com/fsnotify/fsnotify"
 )
 
 // Tag to set main name of field
@@ -66,6 +68,9 @@ var FileEnv string
 // PathEnv is the enviroment variable that define the config file path
 var PathEnv string
 
+// WatchConfigFile is the flag to update the config when the config file changes
+var WatchConfigFile bool
+
 func findFileFormat(extension string) (format Fileformat, err error) {
 	format = Fileformat{}
 	for _, f := range Formats {
@@ -86,10 +91,17 @@ func init() {
 
 	FileEnv = "GO_CONFIG_FILE"
 	PathEnv = "GO_CONFIG_PATH"
+
+	WatchConfigFile = false
 }
 
 // Parse configuration
-func Parse(config interface{}) (err error) {
+// when not watching the config file, there is no need to receive
+// both error and update channels
+func Parse(config interface{}) (err error, chErr chan error, chChanges chan int64) {
+	chErr = make(chan error)
+	chChanges = make(chan int64)
+
 	goenv.Prefix = PrefixEnv
 	goenv.Setup(Tag, TagDefault)
 	err = structtag.SetBoolDefaults(config, "")
@@ -101,18 +113,19 @@ func Parse(config interface{}) (err error) {
 
 	ext := path.Ext(File)
 	if ext != "" {
-		var format Fileformat
-		format, err = findFileFormat(ext)
-		if err != nil {
+		if err = loadConfigFromFile(ext, config); err != nil {
 			return
 		}
-		err = format.Load(config)
-		if err != nil {
-			return
-		}
-		HelpString, err = format.PrepareHelp(config)
-		if err != nil {
-			return
+
+		if WatchConfigFile {
+			watcher, err := fsnotify.NewWatcher()
+			if err != nil {
+				return err, chErr, chChanges
+			}
+			if err = watcher.Add(path.Join(Path, File)); err != nil {
+				return err, chErr, chChanges
+			}
+			go asyncParse(config, watcher, chErr, chChanges)
 		}
 	}
 
@@ -167,5 +180,57 @@ func lookupEnv() {
 
 	if val, set := os.LookupEnv(pref + PathEnv); set {
 		Path = val
+	}
+}
+
+func loadConfigFromFile(ext string, config interface{}) (err error) {
+	var format Fileformat
+	format, err = findFileFormat(ext)
+	if err != nil {
+		return
+	}
+	err = format.Load(config)
+	if err != nil {
+		return
+	}
+	HelpString, err = format.PrepareHelp(config)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func asyncParse(config interface{}, w *fsnotify.Watcher, chErr chan<- error, chUp chan<- int64) {
+	var state uint
+	for {
+		select {
+		case ev := <-w.Events:
+			// these event check are needed for vi-like editors that uses a swap file when saving
+			// other editors like nano directly writes to the file
+			if ev.Op&fsnotify.Rename == fsnotify.Rename && (state == 0) {
+				state |= (1 << 0)
+			} else if ev.Op&fsnotify.Chmod == fsnotify.Chmod && (state == 1) {
+				state |= (1 << 1)
+			} else if ev.Op&fsnotify.Remove == fsnotify.Remove && (state == 3) {
+				state |= (1 << 2)
+			}
+
+			if (ev.Op&fsnotify.Write == fsnotify.Write) || (state == 7) {
+				if err := loadConfigFromFile(path.Ext(File), config); err != nil {
+					chErr <- err
+					break
+				}
+
+				chUp <- time.Now().Unix()
+
+				state = 0
+				w.Add(path.Join(Path, File))
+			}
+
+		case err := <-w.Errors:
+			chErr <- err
+			break
+		}
 	}
 }
