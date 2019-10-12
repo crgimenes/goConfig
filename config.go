@@ -96,12 +96,7 @@ func init() {
 }
 
 // Parse configuration
-// when not watching the config file, there is no need to receive
-// both error and update channels
-func Parse(config interface{}) (err error, chErr chan error, chChanges chan int64) {
-	chErr = make(chan error)
-	chChanges = make(chan int64)
-
+func Parse(config interface{}) (err error) {
 	goenv.Prefix = PrefixEnv
 	goenv.Setup(Tag, TagDefault)
 	err = structtag.SetBoolDefaults(config, "")
@@ -115,17 +110,6 @@ func Parse(config interface{}) (err error, chErr chan error, chChanges chan int6
 	if ext != "" {
 		if err = loadConfigFromFile(ext, config); err != nil {
 			return
-		}
-
-		if WatchConfigFile {
-			watcher, err := fsnotify.NewWatcher()
-			if err != nil {
-				return err, chErr, chChanges
-			}
-			if err = watcher.Add(path.Join(Path, File)); err != nil {
-				return err, chErr, chChanges
-			}
-			go asyncParse(config, watcher, chErr, chChanges)
 		}
 	}
 
@@ -233,4 +217,37 @@ func asyncParse(config interface{}, w *fsnotify.Watcher, chErr chan<- error, chU
 			break
 		}
 	}
+}
+
+// ParseAndWatch configuration returns a channel for errors while watching files
+// and anorther when each update has been detected
+func ParseAndWatch(config interface{}) (chChanges chan int64, chErr chan error, err error) {
+	chErr = make(chan error, 1)
+	chChanges = make(chan int64, 1)
+
+	lookupEnv()
+
+	ext := path.Ext(File)
+	if ext != "" {
+		if err = loadConfigFromFile(ext, config); err != nil {
+			return
+		}
+
+		if WatchConfigFile {
+			watcher, err := fsnotify.NewWatcher()
+			if err != nil {
+				return chChanges, chErr, err
+			}
+			if err = watcher.Add(path.Join(Path, File)); err != nil {
+				return chChanges, chErr, err
+			}
+			go asyncParse(config, watcher, chErr, chChanges)
+		}
+	}
+
+	validate.Prefix = PrefixFlag
+	validate.Setup(Tag, TagDefault)
+	err = validate.Parse(config)
+
+	return
 }
