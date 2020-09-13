@@ -1,6 +1,6 @@
 package main
 
-import "github.com/crgimenes/goconfig"
+import "github.com/gosidekick/goconfig"
 
 /*
 step 1: Declare your configuration struct,

@@ -12,10 +12,10 @@ import (
 
 	"path/filepath"
 
-	"github.com/crgimenes/goconfig/goenv"
-	"github.com/crgimenes/goconfig/goflags"
-	"github.com/crgimenes/goconfig/structtag"
-	"github.com/crgimenes/goconfig/validate"
+	"github.com/gosidekick/goconfig/goenv"
+	"github.com/gosidekick/goconfig/goflags"
+	"github.com/gosidekick/goconfig/structtag"
+	"github.com/gosidekick/goconfig/validate"
 	"github.com/fsnotify/fsnotify"
 )
 

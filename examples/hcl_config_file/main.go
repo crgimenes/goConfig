@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/crgimenes/goconfig"
-	_ "github.com/crgimenes/goconfig/hcl"
+	"github.com/gosidekick/goconfig"
+	_ "github.com/gosidekick/goconfig/hcl"
 )
 
 type mongoDB struct {

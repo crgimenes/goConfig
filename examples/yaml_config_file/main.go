@@ -6,8 +6,8 @@ package main
 import (
 	"encoding/json"
 
-	"github.com/crgimenes/goconfig"
-	_ "github.com/crgimenes/goconfig/yaml"
+	"github.com/gosidekick/goconfig"
+	_ "github.com/gosidekick/goconfig/yaml"
 )
 
 type mongoDB struct {

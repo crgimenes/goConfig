@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/crgimenes/goconfig"
+	"github.com/gosidekick/goconfig"
 	"github.com/fatih/structs"
 	"github.com/hashicorp/hcl"
 	"github.com/hashicorp/hcl/hcl/printer"

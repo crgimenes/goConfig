@@ -1,4 +1,4 @@
-module github.com/crgimenes/goconfig
+module github.com/gosidekick/goconfig
 
 go 1.14
 

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/crgimenes/goconfig"
+	"github.com/gosidekick/goconfig"
 )
 
 // Declare config struct

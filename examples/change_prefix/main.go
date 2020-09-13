@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 
-	"github.com/crgimenes/goconfig"
+	"github.com/gosidekick/goconfig"
 )
 
 // Declare config struct

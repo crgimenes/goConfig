@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/crgimenes/goconfig"
-	"github.com/crgimenes/goconfig/helper"
+	"github.com/gosidekick/goconfig"
+	"github.com/gosidekick/goconfig/helper"
 )
 
 func init() {

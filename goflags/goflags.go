@@ -9,7 +9,7 @@ import (
 
 	"flag"
 
-	"github.com/crgimenes/goconfig/structtag"
+	"github.com/gosidekick/goconfig/structtag"
 )
 
 type parameterMeta struct {
