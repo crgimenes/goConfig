@@ -3,7 +3,7 @@ language: go
 os:
     - linux
 go:
-    - 1.9
+    - 1.15
  
 env:
     global:
